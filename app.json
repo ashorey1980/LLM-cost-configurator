@@ -1,0 +1,17 @@
+{
+  "name": "LLM Proxy UI",
+  "description": "LLM Proxy Configuration UI for Anypoint Platform",
+  "repository": "https://github.com/your-username/llm-proxy-ui",
+  "keywords": ["llm", "proxy", "anypoint", "mulesoft", "ui"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+}

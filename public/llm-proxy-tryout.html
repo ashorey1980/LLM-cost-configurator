@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Proxy - Try Out</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: #1a1a1a;
+        }
+
+        .tryout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .prompt-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            color: #1a1a1a;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .try-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: fit-content;
+        }
+
+        .try-button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .try-button svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .response-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            min-height: 200px;
+        }
+
+        .response-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .response-question {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .response-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .response-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1a1a1a;
+        }
+
+        .code-block {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            margin: 8px 0;
+            color: #1a1a1a;
+        }
+
+        .result-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            min-height: 200px;
+        }
+
+        .result-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            width: 100px;
+            flex-shrink: 0;
+        }
+
+        .result-value {
+            font-size: 14px;
+            color: #1a1a1a;
+            flex: 1;
+        }
+
+        .status-success {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #059669;
+        }
+
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .button {
+            padding: 10px 24px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .button-primary {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .open-file-button {
+            padding: 10px 20px;
+            background: #10b981;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .open-file-button:hover {
+            background: #059669;
+        }
+
+        .open-file-button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .tryout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Try out your LLM Proxy:</h1>
+            <button class="open-file-button" onclick="openFile()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+                Open File
+            </button>
+        </div>
+
+        <div class="tryout-grid">
+            <!-- Column 1: Enter a prompt -->
+            <div class="column">
+                <div class="column-header">Enter a prompt:</div>
+                <div class="prompt-container">
+                    <textarea placeholder="Enter your prompt here..." id="promptInput">How do I set up a loop in Python?</textarea>
+                    <button class="try-button" onclick="tryOut()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                        Try out
+                    </button>
+                </div>
+            </div>
+
+            <!-- Column 2: LLM Response -->
+            <div class="column">
+                <div class="column-header">LLM Response:</div>
+                <div class="response-box">
+                    <div class="response-content" id="responseContent">
+                        <div class="response-question">How do I set up a loop in Python?</div>
+                        <div>
+                            <div class="response-label">Response:</div>
+                            <div class="response-text">
+                                To set up a basic loop in Python, you can use a for loop to iterate over a sequence:
+                            </div>
+                            <div class="code-block">for  i  in  range(5):<br>&nbsp;&nbsp;&nbsp;&nbsp;print(f'Iteration {i}')</div>
+                            <div class="response-text">
+                                This will print the numbers 0 through 4. Alternatively, use a while loop if you want to continue until a specific condition is met.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Test Result -->
+            <div class="column">
+                <div class="column-header">Test Result:</div>
+                <div class="result-box">
+                    <div class="result-row">
+                        <div class="result-label">Status:</div>
+                        <div class="result-value status-success">
+                            <span class="checkmark">✓</span>
+                            Request successfully matched (Score: 0.88)
+                        </div>
+                    </div>
+                    <div class="result-row">
+                        <div class="result-label">Outcome:</div>
+                        <div class="result-value">
+                            Prompt matched 'Programming' topic in Route A. There were no violations detected by the semantic prompt guard.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-buttons">
+            <button class="button" onclick="cancel()">Cancel</button>
+            <button class="button" onclick="previous()">Previous</button>
+        </div>
+    </div>
+
+    <script>
+        function openFile() {
+            window.open('llm-proxy-tryout.html', '_blank');
+        }
+
+        function tryOut() {
+            const prompt = document.getElementById('promptInput').value;
+            if (!prompt.trim()) {
+                alert('Please enter a prompt');
+                return;
+            }
+            console.log('Trying out prompt:', prompt);
+            // Add your API call logic here
+        }
+
+        function cancel() {
+            if (confirm('Are you sure you want to cancel?')) {
+                document.getElementById('promptInput').value = '';
+                console.log('Cancelled');
+            }
+        }
+
+        function previous() {
+            console.log('Going to previous page');
+            // Add navigation logic here
+        }
+    </script>
+</body>
+</html>

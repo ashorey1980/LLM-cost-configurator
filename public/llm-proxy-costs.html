@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Proxy - Cost Configuration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-item {
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px 12px;
+        }
+
+        .nav-item:hover {
+            color: #1a1a1a;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .icon-button:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 8px 0;
+        }
+
+        .sidebar-header {
+            padding: 8px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 10px 24px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            background: #f9fafb;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-left: 3px solid #2563eb;
+            padding-left: 21px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        .breadcrumb-current {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .page-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #1a1a1a;
+        }
+
+        .info-banner {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 32px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .info-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: #3b82f6;
+        }
+
+        .info-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1e40af;
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .cost-table thead {
+            background: #f9fafb;
+        }
+
+        .cost-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .cost-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .cost-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .cost-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .model-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .model-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .model-provider {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .cost-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cost-input {
+            width: 140px;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+
+        .cost-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-prefix {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .input-suffix {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .add-model-button {
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-model-button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .button {
+            padding: 10px 24px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .button-primary {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .button-secondary {
+            background: white;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .delete-button {
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #ef4444;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .delete-button:hover {
+            background: #fee2e2;
+        }
+
+        .global-checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .cost-input:disabled {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .model-select, .provider-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1a1a1a;
+            background: white;
+            cursor: pointer;
+        }
+
+        .model-select:focus, .provider-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .custom-model-input {
+            display: none;
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1a1a1a;
+            margin-top: 4px;
+        }
+
+        .custom-model-input.visible {
+            display: block;
+        }
+
+        .custom-model-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .cost-table {
+                font-size: 13px;
+            }
+            .cost-input {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo"></div>
+            <div class="nav-menu">
+                <div class="nav-item">Integrations</div>
+                <div class="nav-item">APIs</div>
+                <div class="nav-item">Agents & Tools</div>
+                <div class="nav-item">Runtimes</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-button">🔔</button>
+            <button class="icon-button">⚙️</button>
+            <button class="icon-button">🕐</button>
+            <div class="user-avatar">AS</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header">API Manager</div>
+                <div class="sidebar-item">Sandbox</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item">← LLM Proxies</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item">LLM Summary</div>
+                <div class="sidebar-item">Contracts</div>
+                <div class="sidebar-item">AI Policies</div>
+                <div class="sidebar-item">Message Log</div>
+                <div class="sidebar-item">Logs</div>
+                <div class="sidebar-item">SLA Tiers</div>
+                <div class="sidebar-item active">Configuration</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-container">
+                <div class="breadcrumb">
+                    <a href="/">LLM Proxies</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-current">Cost Configuration</span>
+                </div>
+
+                <div class="page-header">
+                    <h1 class="page-title">LLM Cost Configuration</h1>
+                    <p class="page-description">
+                        Configure input and output costs per million tokens for each LLM model. These costs will be used to calculate usage expenses and generate billing reports.
+                    </p>
+                </div>
+
+                <div class="form-section">
+                    <div class="info-banner">
+                        <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="info-text">
+                            <strong>Pricing Information:</strong> Enter the cost per million tokens for each model. These values are typically provided by the LLM provider in their pricing documentation. Costs are calculated separately for input tokens (prompts) and output tokens (completions).
+                        </div>
+                    </div>
+
+                    <h2 class="section-title">Model Pricing</h2>
+
+                    <div class="global-checkbox-container">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="globalListPricing" class="checkbox-input" onchange="toggleAllListPricing(this)">
+                            <label for="globalListPricing" class="checkbox-label">Use List Pricing for All Models</label>
+                        </div>
+                    </div>
+
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Model</th>
+                                <th style="width: 25%;">Input Cost (per 1M tokens)</th>
+                                <th style="width: 25%;">Output Cost (per 1M tokens)</th>
+                                <th style="width: 18%;">Use List Pricing</th>
+                                <th style="width: 12%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="costTableBody">
+                            <tr>
+                                <td>
+                                    <div class="model-cell">
+                                        <div class="model-name">GPT-5 Mini</div>
+                                        <div class="model-provider">OpenAI</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="cost-input-group">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" class="cost-input row-input-cost" placeholder="0.00" value="0.15" step="0.01" min="0">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="cost-input-group">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" class="cost-input row-output-cost" placeholder="0.00" value="0.60" step="0.01" min="0">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="delete-button" onclick="deleteRow(this)" title="Delete">
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="model-cell">
+                                        <div class="model-name">Gemini 3 Flash Preview</div>
+                                        <div class="model-provider">Google</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="cost-input-group">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" class="cost-input row-input-cost" placeholder="0.00" value="0.10" step="0.01" min="0">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="cost-input-group">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" class="cost-input row-output-cost" placeholder="0.00" value="0.40" step="0.01" min="0">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="delete-button" onclick="deleteRow(this)" title="Delete">
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="model-cell">
+                                        <div class="model-name">Claude Sonnet 3.5</div>
+                                        <div class="model-provider">Anthropic</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="cost-input-group">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" class="cost-input row-input-cost" placeholder="0.00" value="3.00" step="0.01" min="0">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="cost-input-group">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" class="cost-input row-output-cost" placeholder="0.00" value="15.00" step="0.01" min="0">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="delete-button" onclick="deleteRow(this)" title="Delete">
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <button class="add-model-button" onclick="addModelRow()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Model
+                    </button>
+
+                    <div class="button-row">
+                        <button class="button button-secondary" onclick="cancel()">Cancel</button>
+                        <div class="action-buttons">
+                            <button class="button button-secondary" onclick="reset()">Reset to Defaults</button>
+                            <button class="button button-primary" onclick="save()">Save Configuration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function addModelRow() {
+            const tbody = document.getElementById('costTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>
+                    <div class="model-cell">
+                        <select class="model-select" onchange="handleModelChange(this)" style="margin-bottom: 4px;">
+                            <option value="">Select a model...</option>
+                            <option value="GPT-4o">GPT-4o</option>
+                            <option value="GPT-4 Turbo">GPT-4 Turbo</option>
+                            <option value="GPT-5 Mini">GPT-5 Mini</option>
+                            <option value="Claude Opus 4">Claude Opus 4</option>
+                            <option value="Claude Sonnet 4">Claude Sonnet 4</option>
+                            <option value="Claude Sonnet 3.5">Claude Sonnet 3.5</option>
+                            <option value="Claude Haiku 3">Claude Haiku 3</option>
+                            <option value="Gemini 2.0 Flash">Gemini 2.0 Flash</option>
+                            <option value="Gemini 3 Flash Preview">Gemini 3 Flash Preview</option>
+                            <option value="Gemini 1.5 Pro">Gemini 1.5 Pro</option>
+                            <option value="Llama 3.3 70B">Llama 3.3 70B</option>
+                            <option value="Llama 3.1 405B">Llama 3.1 405B</option>
+                            <option value="Mistral Large">Mistral Large</option>
+                            <option value="Custom...">Custom...</option>
+                        </select>
+                        <input type="text" class="custom-model-input" placeholder="Enter custom model name">
+                        <select class="provider-select">
+                            <option value="">Select a provider...</option>
+                            <option value="OpenAI">OpenAI</option>
+                            <option value="Anthropic">Anthropic</option>
+                            <option value="Google">Google</option>
+                            <option value="Meta">Meta</option>
+                            <option value="Mistral">Mistral</option>
+                            <option value="Amazon Bedrock">Amazon Bedrock</option>
+                            <option value="Azure OpenAI">Azure OpenAI</option>
+                            <option value="Cohere">Cohere</option>
+                            <option value="Hugging Face">Hugging Face</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <div class="cost-input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" class="cost-input row-input-cost" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </td>
+                <td>
+                    <div class="cost-input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" class="cost-input row-output-cost" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </td>
+                <td>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
+                    </div>
+                </td>
+                <td>
+                    <button class="delete-button" onclick="deleteRow(this)" title="Delete">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function handleModelChange(selectElement) {
+            const modelCell = selectElement.closest('.model-cell');
+            const customInput = modelCell.querySelector('.custom-model-input');
+
+            if (selectElement.value === 'Custom...') {
+                customInput.classList.add('visible');
+                customInput.focus();
+            } else {
+                customInput.classList.remove('visible');
+                customInput.value = '';
+            }
+        }
+
+        function deleteRow(button) {
+            if (confirm('Are you sure you want to delete this model configuration?')) {
+                const row = button.closest('tr');
+                row.remove();
+            }
+        }
+
+        function toggleAllListPricing(globalCheckbox) {
+            const isChecked = globalCheckbox.checked;
+            const rowCheckboxes = document.querySelectorAll('.row-list-pricing');
+
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                toggleRowInputs(checkbox.closest('tr'), isChecked);
+            });
+        }
+
+        function toggleRowListPricing(rowCheckbox) {
+            const row = rowCheckbox.closest('tr');
+            const isChecked = rowCheckbox.checked;
+            toggleRowInputs(row, isChecked);
+
+            // Update global checkbox state
+            updateGlobalCheckbox();
+        }
+
+        function toggleRowInputs(row, disable) {
+            const inputCost = row.querySelector('.row-input-cost');
+            const outputCost = row.querySelector('.row-output-cost');
+
+            if (inputCost) inputCost.disabled = disable;
+            if (outputCost) outputCost.disabled = disable;
+        }
+
+        function updateGlobalCheckbox() {
+            const globalCheckbox = document.getElementById('globalListPricing');
+            const rowCheckboxes = document.querySelectorAll('.row-list-pricing');
+            const checkedCount = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
+
+            if (checkedCount === 0) {
+                globalCheckbox.checked = false;
+                globalCheckbox.indeterminate = false;
+            } else if (checkedCount === rowCheckboxes.length) {
+                globalCheckbox.checked = true;
+                globalCheckbox.indeterminate = false;
+            } else {
+                globalCheckbox.checked = false;
+                globalCheckbox.indeterminate = true;
+            }
+        }
+
+        function save() {
+            const rows = document.querySelectorAll('#costTableBody tr');
+            const costs = [];
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const modelCell = cells[0].querySelector('.model-cell');
+
+                // Get model name from either static display, dropdown, or custom input
+                let modelName = modelCell.querySelector('.model-name')?.textContent || '';
+                const modelSelect = modelCell.querySelector('.model-select');
+                if (modelSelect) {
+                    if (modelSelect.value === 'Custom...') {
+                        modelName = modelCell.querySelector('.custom-model-input')?.value || '';
+                    } else {
+                        modelName = modelSelect.value;
+                    }
+                }
+
+                // Get provider from either static display or dropdown
+                let provider = modelCell.querySelector('.model-provider')?.textContent || '';
+                const providerSelect = modelCell.querySelector('.provider-select');
+                if (providerSelect) {
+                    provider = providerSelect.value;
+                }
+
+                const inputCost = cells[1].querySelector('.cost-input').value;
+                const outputCost = cells[2].querySelector('.cost-input').value;
+                const useListPricing = row.querySelector('.row-list-pricing')?.checked || false;
+
+                if (modelName && (inputCost || outputCost || useListPricing)) {
+                    costs.push({
+                        model: modelName,
+                        provider: provider,
+                        inputCost: parseFloat(inputCost) || 0,
+                        outputCost: parseFloat(outputCost) || 0,
+                        useListPricing: useListPricing
+                    });
+                }
+            });
+
+            console.log('Saving cost configuration:', costs);
+            alert('Cost configuration saved successfully!');
+            // Add your API call to save the configuration here
+        }
+
+        function cancel() {
+            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                window.history.back();
+            }
+        }
+
+        function reset() {
+            if (confirm('Are you sure you want to reset to default values? This will overwrite your current configuration.')) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

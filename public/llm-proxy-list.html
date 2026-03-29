@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Proxies - API Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-item {
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px 12px;
+        }
+
+        .nav-item:hover {
+            color: #1a1a1a;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .icon-button:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 8px 0;
+        }
+
+        .sidebar-header {
+            padding: 8px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 10px 24px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            background: #f9fafb;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-left: 3px solid #2563eb;
+            padding-left: 21px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .button-primary {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .button-cost {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .button-cost:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .control-bar {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+            width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .control-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 14px;
+            color: #1a1a1a;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .proxy-name {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .proxy-name:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #059669;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .action-menu {
+            position: relative;
+        }
+
+        .action-button {
+            padding: 4px 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            border-radius: 4px;
+        }
+
+        .action-button:hover {
+            background: #f3f4f6;
+        }
+
+        .metrics-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .metrics-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .search-box {
+                width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo"></div>
+            <div class="nav-menu">
+                <div class="nav-item">Integrations</div>
+                <div class="nav-item">APIs</div>
+                <div class="nav-item">Agents & Tools</div>
+                <div class="nav-item">Runtimes</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-button">🔔</button>
+            <button class="icon-button">⚙️</button>
+            <button class="icon-button">🕐</button>
+            <div class="user-avatar">AS</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header">API Manager</div>
+                <div class="sidebar-item">Sandbox</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header">API Management</div>
+                <div class="sidebar-item">API Instances</div>
+                <div class="sidebar-item">API Groups</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header">AI Management</div>
+                <div class="sidebar-item active">LLM Proxies</div>
+                <div class="sidebar-item">Semantic Service Setup</div>
+                <div class="sidebar-item">Agent and Tool Instances</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header"></div>
+                <div class="sidebar-item">Automated Policies</div>
+                <div class="sidebar-item">Client Applications</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">LLM Proxies</h1>
+                <div class="header-actions">
+                    <button class="button button-cost" onclick="navigateToCosts()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Configure Costs
+                    </button>
+                    <button class="button">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Environment
+                    </button>
+                    <button class="button button-primary">
+                        + Add LLM Proxy
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-bar">
+                <div class="search-box">
+                    <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" placeholder="Search by proxy name, version or label">
+                </div>
+                <div class="control-right">
+                    <span class="pagination-info">1 to 4 of 4</span>
+                    <button class="icon-button" disabled>❮</button>
+                    <button class="icon-button">❯</button>
+                    <button class="icon-button">≡</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LLM Proxy Name</th>
+                            <th>Label</th>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Created on</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <a href="/details" class="proxy-name">mythicalsemanticproxy2</a>
+                            </td>
+                            <td>-</td>
+                            <td>20772767</td>
+                            <td>
+                                <span class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Active
+                                </span>
+                            </td>
+                            <td>March 3, 2026</td>
+                            <td>
+                                <div class="action-menu">
+                                    <button class="action-button">⋮</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="/details" class="proxy-name">mythicalsemantic</a>
+                            </td>
+                            <td>-</td>
+                            <td>20772609</td>
+                            <td>
+                                <span class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Active
+                                </span>
+                            </td>
+                            <td>March 3, 2026</td>
+                            <td>
+                                <div class="action-menu">
+                                    <button class="action-button">⋮</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="/details" class="proxy-name">mythicalmodelbased</a>
+                            </td>
+                            <td>-</td>
+                            <td>20772603</td>
+                            <td>
+                                <span class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Active
+                                </span>
+                            </td>
+                            <td>March 3, 2026</td>
+                            <td>
+                                <div class="action-menu">
+                                    <button class="action-button">⋮</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="/details" class="proxy-name">Mythicalgemminiproxy</a>
+                            </td>
+                            <td>-</td>
+                            <td>20819080</td>
+                            <td>
+                                <span class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Active
+                                </span>
+                            </td>
+                            <td>March 27, 2026</td>
+                            <td>
+                                <div class="action-menu">
+                                    <button class="action-button">⋮</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 24px; text-align: right;">
+                <a href="#" class="metrics-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Track metrics in LLM Usage Insights
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function navigateToCosts() {
+            window.location.href = '/costs';
+        }
+    </script>
+</body>
+</html>

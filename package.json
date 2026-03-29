@@ -1,0 +1,25 @@
+{
+  "name": "llm-proxy-ui",
+  "version": "1.0.0",
+  "description": "LLM Proxy Configuration UI for Anypoint Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.x",
+    "npm": ">=9.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": [
+    "llm",
+    "proxy",
+    "anypoint",
+    "mulesoft"
+  ],
+  "author": "",
+  "license": "MIT"
+}

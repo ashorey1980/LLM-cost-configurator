@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Proxy - mythicalsemanticproxy2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-item {
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px 12px;
+        }
+
+        .nav-item:hover {
+            color: #1a1a1a;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .icon-button:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 8px 0;
+        }
+
+        .sidebar-header {
+            padding: 8px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 10px 24px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            background: #f9fafb;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-left: 3px solid #2563eb;
+            padding-left: 21px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        .breadcrumb-current {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .actions-dropdown {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .config-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #059669;
+            font-size: 14px;
+        }
+
+        .link {
+            color: #3b82f6;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .edit-config-button {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-config-button:hover {
+            background: #f9fafb;
+        }
+
+        .tryout-button {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tryout-button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .metrics-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .metrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .metrics-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .time-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .time-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .refresh-button {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart {
+            height: 200px;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .chart-legend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 2px;
+            background: #3b82f6;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+            color: #1a1a1a;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .modal-tryout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .modal-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-column-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .modal-prompt-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            color: #1a1a1a;
+        }
+
+        .modal-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .modal-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal-input-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .modal-credentials-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .modal-headers-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .modal-headers-table {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .modal-headers-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #f9fafb;
+            border-bottom: 1px solid #d1d5db;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .modal-header-col-key,
+        .modal-header-col-value {
+            padding: 0 4px;
+        }
+
+        .modal-header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-header-row:last-child {
+            border-bottom: none;
+        }
+
+        .modal-header-input {
+            padding: 10px 12px;
+            border: none;
+            background: white;
+            font-family: inherit;
+            font-size: 14px;
+            color: #1a1a1a;
+            outline: none;
+        }
+
+        .modal-header-input:first-child {
+            border-right: 1px solid #e5e7eb;
+            color: #6b7280;
+            background: white;
+        }
+
+        .modal-header-input:focus {
+            background: #f0f9ff;
+        }
+
+        .modal-header-input:first-child:focus {
+            background: white;
+        }
+
+        .modal-info-note {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1e40af;
+        }
+
+        .modal-info-icon {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            color: #3b82f6;
+        }
+
+        .modal-try-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: fit-content;
+        }
+
+        .modal-try-button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .modal-response-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            min-height: 200px;
+        }
+
+        .modal-response-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-response-question {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .modal-response-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .modal-response-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1a1a1a;
+        }
+
+        .modal-code-block {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            margin: 8px 0;
+            color: #1a1a1a;
+        }
+
+        .modal-result-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            min-height: 200px;
+        }
+
+        .modal-result-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-result-row:last-child {
+            border-bottom: none;
+        }
+
+        .modal-result-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            width: 100px;
+            flex-shrink: 0;
+        }
+
+        .modal-result-value {
+            font-size: 14px;
+            color: #1a1a1a;
+            flex: 1;
+        }
+
+        .modal-status-success {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #059669;
+        }
+
+        .modal-checkmark {
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .modal-footer-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .modal-button {
+            padding: 10px 24px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .modal-tryout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo"></div>
+            <div class="nav-menu">
+                <div class="nav-item">Integrations</div>
+                <div class="nav-item">APIs</div>
+                <div class="nav-item">Agents & Tools</div>
+                <div class="nav-item">Runtimes</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-button">🔔</button>
+            <button class="icon-button">⚙️</button>
+            <button class="icon-button">🕐</button>
+            <div class="user-avatar">AS</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header">API Manager</div>
+                <div class="sidebar-item">Sandbox</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item active">← LLM Proxies</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item">LLM Summary</div>
+                <div class="sidebar-item">Contracts</div>
+                <div class="sidebar-item">AI Policies</div>
+                <div class="sidebar-item">Message Log</div>
+                <div class="sidebar-item">Logs</div>
+                <div class="sidebar-item">SLA Tiers</div>
+                <div class="sidebar-item">Configuration</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="breadcrumb">
+                <a href="/">LLM Proxies</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">mythicalsemanticproxy2</span>
+            </div>
+
+            <div class="page-header">
+                <div class="page-title-row">
+                    <h1 class="page-title">mythicalsemanticproxy2</h1>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="tryout-button" onclick="openTryout()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Try Out
+                        </button>
+                        <button class="actions-dropdown">Actions ▼</button>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Status:</div>
+                        <div class="info-value">
+                            <span class="status-badge">
+                                <span class="status-dot"></span>
+                                Active
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">LLM Proxy name:</div>
+                        <div class="info-value">mythicalsemanticproxy2</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Consumer endpoint:</div>
+                        <div class="info-value">N/A</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Provider:</div>
+                        <div class="info-value">OpenAI, Gemini</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Label:</div>
+                        <div class="info-value">N/A</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Public Endpoint:</div>
+                        <div class="info-value">
+                            <a href="#" class="link">
+                                🔗 https://llmgateway-okqswk.ezjit.usa...
+                            </a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Target Model:</div>
+                        <div class="info-value">Gpt 5 Mini, Gemini 3 Flash Preview</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ID:</div>
+                        <div class="info-value">20772767</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Implementation URI:</div>
+                        <div class="info-value">N/A</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Runtime Target:</div>
+                        <div class="info-value">
+                            <a href="#" class="link">llmgateway 🔗</a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Configuration status:</div>
+                        <div class="info-value">
+                            <span class="config-status">✓ Up to date</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Created on:</div>
+                        <div class="info-value">March 3, 2026</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tags:</div>
+                        <div class="info-value">
+                            <button class="edit-config-button">Add New Tag +</button>
+                        </div>
+                    </div>
+                    <div class="info-item"></div>
+                    <div class="info-item" style="display: flex; align-items: flex-end;">
+                        <button class="edit-config-button">Edit Configuration</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-section">
+                <div class="metrics-header">
+                    <a href="#" class="metrics-link">
+                        📊 View more metrics in Anypoint Monitoring dashboard
+                    </a>
+                    <div class="time-selector">
+                        <button class="refresh-button">🔄</button>
+                        <select class="time-select">
+                            <option>Last 24 hours</option>
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            Total requests per hour
+                            <span style="color: #9ca3af;">ⓘ</span>
+                        </div>
+                        <div class="chart">
+                            <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none">
+                                <polyline fill="none" stroke="#3b82f6" stroke-width="2"
+                                    points="50,180 150,160 250,150 350,140 450,100 550,60 650,120 750,100"/>
+                            </svg>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-line"></span>
+                            Request Count
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            Total policy violations per hour
+                            <span style="color: #9ca3af;">ⓘ</span>
+                        </div>
+                        <div class="chart">
+                            <div class="chart-placeholder">No data points</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            Total errors per hour
+                            <span style="color: #9ca3af;">ⓘ</span>
+                        </div>
+                        <div class="chart">
+                            <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none">
+                                <polyline fill="none" stroke="#ef4444" stroke-width="2"
+                                    points="50,180 150,180 250,180 350,180 450,180 550,100 650,180 750,180"/>
+                            </svg>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-line" style="background: #ef4444;"></span>
+                            4xx
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            Average response time per hour
+                            <span style="color: #9ca3af;">ⓘ</span>
+                        </div>
+                        <div class="chart">
+                            <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none">
+                                <polyline fill="none" stroke="#8b5cf6" stroke-width="2"
+                                    points="50,180 150,180 250,180 350,180 450,180 550,60 650,40 750,100 850,50 950,100 1050,40"/>
+                            </svg>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-line" style="background: #8b5cf6;"></span>
+                            Average Response Time
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="tryoutModal" onclick="closeModalOnOverlay(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Try out your LLM Proxy</h2>
+                <button class="modal-close" onclick="closeTryoutModal()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tryout-grid">
+                    <!-- Column 1: Enter a prompt -->
+                    <div class="modal-column">
+                        <div class="modal-column-header">Enter a prompt:</div>
+                        <div class="modal-prompt-container">
+                            <textarea placeholder="Enter your prompt here..." id="modalPromptInput" class="modal-textarea">How do I set up a loop in Python?</textarea>
+
+                            <div class="modal-credentials-section">
+                                <div class="modal-input-group">
+                                    <label class="modal-input-label" for="consumerEndpoint">Consumer / Public Endpoint:</label>
+                                    <input type="text" id="consumerEndpoint" class="modal-input" placeholder="Enter consumer / public endpoint" value="https://llmgateway-okgqwk.ezjri.usa...">
+                                </div>
+
+                                <div class="modal-headers-section">
+                                    <label class="modal-input-label">Authentication Headers:</label>
+                                    <div class="modal-headers-table">
+                                        <div class="modal-headers-header">
+                                            <div class="modal-header-col-key">Key</div>
+                                            <div class="modal-header-col-value">Value</div>
+                                        </div>
+                                        <div class="modal-header-row">
+                                            <input type="text" class="modal-header-input" value="Client-ID" readonly>
+                                            <input type="text" class="modal-header-input" placeholder="Enter client ID">
+                                        </div>
+                                        <div class="modal-header-row">
+                                            <input type="text" class="modal-header-input" value="Client-Secret" readonly>
+                                            <input type="password" class="modal-header-input" placeholder="Enter client secret">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="modal-try-button" onclick="tryOutModal()">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                </svg>
+                                Try out
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: LLM Response -->
+                    <div class="modal-column">
+                        <div class="modal-column-header">LLM Response:</div>
+                        <div class="modal-response-box">
+                            <div class="modal-response-content" id="modalResponseContent">
+                                <div class="modal-response-question">How do I set up a loop in Python?</div>
+                                <div>
+                                    <div class="modal-response-label">Response:</div>
+                                    <div class="modal-response-text">
+                                        To set up a basic loop in Python, you can use a for loop to iterate over a sequence:
+                                    </div>
+                                    <div class="modal-code-block">for  i  in  range(5):<br>&nbsp;&nbsp;&nbsp;&nbsp;print(f'Iteration {i}')</div>
+                                    <div class="modal-response-text">
+                                        This will print the numbers 0 through 4. Alternatively, use a while loop if you want to continue until a specific condition is met.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Test Result -->
+                    <div class="modal-column">
+                        <div class="modal-column-header">Test Result:</div>
+                        <div class="modal-result-box">
+                            <div class="modal-result-row">
+                                <div class="modal-result-label">Status:</div>
+                                <div class="modal-result-value modal-status-success">
+                                    <span class="modal-checkmark">✓</span>
+                                    Request successfully matched (Score: 0.88)
+                                </div>
+                            </div>
+                            <div class="modal-result-row">
+                                <div class="modal-result-label">Outcome:</div>
+                                <div class="modal-result-value">
+                                    Prompt matched 'Programming' topic in Route A. There were no violations detected by the semantic prompt guard.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer-buttons">
+                    <button class="modal-button" onclick="cancelModal()">Cancel</button>
+                    <button class="modal-button" onclick="closeTryoutModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTryout() {
+            document.getElementById('tryoutModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTryoutModal() {
+            document.getElementById('tryoutModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeTryoutModal();
+            }
+        }
+
+        function tryOutModal() {
+            const prompt = document.getElementById('modalPromptInput').value;
+            if (!prompt.trim()) {
+                alert('Please enter a prompt');
+                return;
+            }
+            console.log('Trying out prompt:', prompt);
+            // Add your API call logic here
+        }
+
+        function cancelModal() {
+            if (confirm('Are you sure you want to cancel?')) {
+                document.getElementById('modalPromptInput').value = '';
+                closeTryoutModal();
+            }
+        }
+    </script>
+</body>
+</html>
