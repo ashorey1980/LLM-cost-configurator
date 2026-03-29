@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Administration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            font-family: 'Monaco', 'Courier New', monospace;
+            min-height: 400px;
+            resize: vertical;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #2563eb;
+        }
+
+        .button-secondary {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .button-secondary:hover {
+            background: #f9fafb;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .last-updated {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Pricing Administration</h1>
+            <p class="subtitle">Manage list pricing for LLM models</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="section">
+            <h2 class="section-title">Current Pricing Data</h2>
+            <div id="lastUpdated" class="last-updated"></div>
+
+            <div class="form-group">
+                <label for="pricingJson">Pricing JSON Data</label>
+                <p class="info-text">Edit the pricing data in JSON format. All prices are per 1 million tokens.</p>
+                <textarea id="pricingJson" placeholder="Loading..."></textarea>
+            </div>
+
+            <div class="button-row">
+                <button class="button button-secondary" onclick="loadPricing()">Reload</button>
+                <button class="button button-secondary" onclick="validateJson()">Validate JSON</button>
+                <button class="button button-primary" onclick="savePricing()">Save Changes</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="button-row">
+                <button class="button button-secondary" onclick="window.location.href='/costs'">View Cost Configuration</button>
+                <button class="button button-secondary" onclick="formatJson()">Format JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPricingData = null;
+
+        async function loadPricing() {
+            try {
+                const response = await fetch('/api/pricing');
+                if (!response.ok) {
+                    throw new Error('Failed to load pricing data');
+                }
+
+                currentPricingData = await response.json();
+                document.getElementById('pricingJson').value = JSON.stringify(currentPricingData, null, 2);
+
+                if (currentPricingData.lastUpdated) {
+                    const date = new Date(currentPricingData.lastUpdated);
+                    document.getElementById('lastUpdated').textContent =
+                        `Last updated: ${date.toLocaleString()}`;
+                }
+
+                showAlert('Pricing data loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error loading pricing:', error);
+                showAlert('Failed to load pricing data: ' + error.message, 'error');
+            }
+        }
+
+        async function savePricing() {
+            try {
+                const jsonText = document.getElementById('pricingJson').value;
+                const pricingData = JSON.parse(jsonText);
+
+                const response = await fetch('/api/pricing', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pricingData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save pricing data');
+                }
+
+                const result = await response.json();
+                showAlert('Pricing data saved successfully!', 'success');
+
+                // Reload to show updated timestamp
+                await loadPricing();
+            } catch (error) {
+                console.error('Error saving pricing:', error);
+                showAlert('Failed to save pricing data: ' + error.message, 'error');
+            }
+        }
+
+        function validateJson() {
+            try {
+                const jsonText = document.getElementById('pricingJson').value;
+                const parsed = JSON.parse(jsonText);
+
+                // Basic validation
+                if (!parsed.models) {
+                    throw new Error('Missing "models" property');
+                }
+
+                showAlert('JSON is valid!', 'success');
+            } catch (error) {
+                showAlert('Invalid JSON: ' + error.message, 'error');
+            }
+        }
+
+        function formatJson() {
+            try {
+                const jsonText = document.getElementById('pricingJson').value;
+                const parsed = JSON.parse(jsonText);
+                document.getElementById('pricingJson').value = JSON.stringify(parsed, null, 2);
+                showAlert('JSON formatted successfully', 'success');
+            } catch (error) {
+                showAlert('Cannot format invalid JSON: ' + error.message, 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+
+            container.innerHTML = '';
+            container.appendChild(alert);
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.5s';
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        }
+
+        // Load pricing data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPricing();
+        });
+    </script>
+</body>
+</html>

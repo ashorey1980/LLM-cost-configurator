@@ -548,6 +548,7 @@
                         </svg>
                         <div class="info-text">
                             <strong>Pricing Information:</strong> Enter the cost per million tokens for each model. These values are typically provided by the LLM provider in their pricing documentation. Costs are calculated separately for input tokens (prompts) and output tokens (completions).
+                            <div id="pricingUpdateInfo" style="margin-top: 8px; font-size: 12px; color: #6b7280;"></div>
                         </div>
                     </div>
 
@@ -690,6 +691,64 @@
     </div>
 
     <script>
+        // List pricing database - loaded dynamically from API
+        let listPricing = {};
+        let pricingLastUpdated = null;
+
+        // Load pricing data from API on page load
+        async function loadPricingData() {
+            try {
+                const response = await fetch('/api/pricing');
+                if (!response.ok) {
+                    throw new Error('Failed to load pricing data');
+                }
+
+                const data = await response.json();
+                listPricing = data.models || {};
+                pricingLastUpdated = data.lastUpdated;
+
+                console.log('Pricing data loaded successfully:', pricingLastUpdated);
+                updatePricingTimestamp();
+            } catch (error) {
+                console.error('Error loading pricing data:', error);
+                alert('Failed to load pricing data. Using cached values or manual entry only.');
+            }
+        }
+
+        function updatePricingTimestamp() {
+            const infoElement = document.getElementById('pricingUpdateInfo');
+            if (pricingLastUpdated && infoElement) {
+                const date = new Date(pricingLastUpdated);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                infoElement.textContent = `List pricing last updated: ${formattedDate}`;
+                console.log(`Pricing data last updated: ${formattedDate}`);
+            }
+        }
+
+        async function getListPrice(provider, modelName) {
+            // If pricing data isn't loaded yet, try to load it
+            if (Object.keys(listPricing).length === 0) {
+                await loadPricingData();
+            }
+
+            if (listPricing[provider] && listPricing[provider][modelName]) {
+                return {
+                    input: listPricing[provider][modelName].input,
+                    output: listPricing[provider][modelName].output
+                };
+            }
+            return null;
+        }
+
+        // Load pricing data when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPricingData();
+        });
+
         function addModelRow() {
             const tbody = document.getElementById('costTableBody');
             const newRow = document.createElement('tr');
@@ -777,20 +836,72 @@
             }
         }
 
-        function toggleAllListPricing(globalCheckbox) {
+        async function toggleAllListPricing(globalCheckbox) {
             const isChecked = globalCheckbox.checked;
             const rowCheckboxes = document.querySelectorAll('.row-list-pricing');
 
-            rowCheckboxes.forEach(checkbox => {
+            // Process all rows in parallel
+            const promises = Array.from(rowCheckboxes).map(checkbox => {
                 checkbox.checked = isChecked;
-                toggleRowInputs(checkbox.closest('tr'), isChecked);
+                // Trigger the row-level function to handle pricing retrieval and population
+                return toggleRowListPricing(checkbox);
             });
+
+            // Wait for all pricing lookups to complete
+            await Promise.all(promises);
         }
 
-        function toggleRowListPricing(rowCheckbox) {
+        async function toggleRowListPricing(rowCheckbox) {
             const row = rowCheckbox.closest('tr');
             const isChecked = rowCheckbox.checked;
-            toggleRowInputs(row, isChecked);
+
+            if (isChecked) {
+                // Show loading state
+                rowCheckbox.disabled = true;
+
+                // Retrieve and populate list pricing
+                const modelCell = row.querySelector('.model-cell');
+
+                // Get model name
+                let modelName = modelCell.querySelector('.model-name')?.textContent || '';
+                const modelSelect = modelCell.querySelector('.model-select');
+                if (modelSelect && modelSelect.value && modelSelect.value !== 'Custom...') {
+                    modelName = modelSelect.value;
+                } else if (modelSelect && modelSelect.value === 'Custom...') {
+                    modelName = modelCell.querySelector('.custom-model-input')?.value || '';
+                }
+
+                // Get provider
+                let provider = modelCell.querySelector('.model-provider')?.textContent || '';
+                const providerSelect = modelCell.querySelector('.provider-select');
+                if (providerSelect && providerSelect.value) {
+                    provider = providerSelect.value;
+                }
+
+                // Get list price
+                const pricing = await getListPrice(provider, modelName);
+
+                // Re-enable checkbox
+                rowCheckbox.disabled = false;
+
+                if (pricing) {
+                    // Populate the input fields
+                    const inputCostField = row.querySelector('.row-input-cost');
+                    const outputCostField = row.querySelector('.row-output-cost');
+
+                    if (inputCostField) inputCostField.value = pricing.input.toFixed(2);
+                    if (outputCostField) outputCostField.value = pricing.output.toFixed(2);
+
+                    // Disable the fields
+                    toggleRowInputs(row, true);
+                } else {
+                    alert(`No list pricing found for ${modelName} (${provider}). Please enter prices manually or select a different model.`);
+                    rowCheckbox.checked = false;
+                }
+            } else {
+                // Just disable/enable the fields
+                toggleRowInputs(row, false);
+            }
 
             // Update global checkbox state
             updateGlobalCheckbox();
