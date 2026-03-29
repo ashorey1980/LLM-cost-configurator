@@ -544,21 +544,13 @@
                 <div class="form-section">
                     <h2 class="section-title">Model Pricing</h2>
 
-                    <div class="global-checkbox-container">
-                        <div class="checkbox-wrapper">
-                            <input type="checkbox" id="globalListPricing" class="checkbox-input" onchange="toggleAllListPricing(this)">
-                            <label for="globalListPricing" class="checkbox-label">Use List Pricing for All Models</label>
-                        </div>
-                    </div>
-
                     <table class="cost-table">
                         <thead>
                             <tr>
-                                <th style="width: 20%;">Model</th>
-                                <th style="width: 25%;">Input Cost (per 1M tokens)</th>
-                                <th style="width: 25%;">Output Cost (per 1M tokens)</th>
-                                <th style="width: 18%;">Use List Pricing</th>
-                                <th style="width: 12%;">Actions</th>
+                                <th style="width: 25%;">Model</th>
+                                <th style="width: 30%;">Input Cost (per 1M tokens)</th>
+                                <th style="width: 30%;">Output Cost (per 1M tokens)</th>
+                                <th style="width: 15%;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="costTableBody">
@@ -579,11 +571,6 @@
                                     <div class="cost-input-group">
                                         <span class="input-prefix">$</span>
                                         <input type="number" class="cost-input row-output-cost" placeholder="0.00" value="0.60" step="0.01" min="0">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
                                     </div>
                                 </td>
                                 <td>
@@ -614,11 +601,6 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
-                                    </div>
-                                </td>
-                                <td>
                                     <button class="delete-button" onclick="deleteRow(this)" title="Delete">
                                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -643,11 +625,6 @@
                                     <div class="cost-input-group">
                                         <span class="input-prefix">$</span>
                                         <input type="number" class="cost-input row-output-cost" placeholder="0.00" value="15.00" step="0.01" min="0">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
                                     </div>
                                 </td>
                                 <td>
@@ -791,11 +768,6 @@
                     </div>
                 </td>
                 <td>
-                    <div class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox-input row-list-pricing" onchange="toggleRowListPricing(this)">
-                    </div>
-                </td>
-                <td>
                     <button class="delete-button" onclick="deleteRow(this)" title="Delete">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -823,102 +795,6 @@
             if (confirm('Are you sure you want to delete this model configuration?')) {
                 const row = button.closest('tr');
                 row.remove();
-            }
-        }
-
-        async function toggleAllListPricing(globalCheckbox) {
-            const isChecked = globalCheckbox.checked;
-            const rowCheckboxes = document.querySelectorAll('.row-list-pricing');
-
-            // Process all rows in parallel
-            const promises = Array.from(rowCheckboxes).map(checkbox => {
-                checkbox.checked = isChecked;
-                // Trigger the row-level function to handle pricing retrieval and population
-                return toggleRowListPricing(checkbox);
-            });
-
-            // Wait for all pricing lookups to complete
-            await Promise.all(promises);
-        }
-
-        async function toggleRowListPricing(rowCheckbox) {
-            const row = rowCheckbox.closest('tr');
-            const isChecked = rowCheckbox.checked;
-
-            if (isChecked) {
-                // Show loading state
-                rowCheckbox.disabled = true;
-
-                // Retrieve and populate list pricing
-                const modelCell = row.querySelector('.model-cell');
-
-                // Get model name
-                let modelName = modelCell.querySelector('.model-name')?.textContent || '';
-                const modelSelect = modelCell.querySelector('.model-select');
-                if (modelSelect && modelSelect.value && modelSelect.value !== 'Custom...') {
-                    modelName = modelSelect.value;
-                } else if (modelSelect && modelSelect.value === 'Custom...') {
-                    modelName = modelCell.querySelector('.custom-model-input')?.value || '';
-                }
-
-                // Get provider
-                let provider = modelCell.querySelector('.model-provider')?.textContent || '';
-                const providerSelect = modelCell.querySelector('.provider-select');
-                if (providerSelect && providerSelect.value) {
-                    provider = providerSelect.value;
-                }
-
-                // Get list price
-                const pricing = await getListPrice(provider, modelName);
-
-                // Re-enable checkbox
-                rowCheckbox.disabled = false;
-
-                if (pricing) {
-                    // Populate the input fields
-                    const inputCostField = row.querySelector('.row-input-cost');
-                    const outputCostField = row.querySelector('.row-output-cost');
-
-                    if (inputCostField) inputCostField.value = pricing.input.toFixed(2);
-                    if (outputCostField) outputCostField.value = pricing.output.toFixed(2);
-
-                    // Disable the fields
-                    toggleRowInputs(row, true);
-                } else {
-                    alert(`No list pricing found for ${modelName} (${provider}). Please enter prices manually or select a different model.`);
-                    rowCheckbox.checked = false;
-                }
-            } else {
-                // Just disable/enable the fields
-                toggleRowInputs(row, false);
-            }
-
-            // Update global checkbox state
-            updateGlobalCheckbox();
-        }
-
-        function toggleRowInputs(row, disable) {
-            const inputCost = row.querySelector('.row-input-cost');
-            const outputCost = row.querySelector('.row-output-cost');
-
-            if (inputCost) inputCost.disabled = disable;
-            if (outputCost) outputCost.disabled = disable;
-        }
-
-        function updateGlobalCheckbox() {
-            const globalCheckbox = document.getElementById('globalListPricing');
-            const rowCheckboxes = document.querySelectorAll('.row-list-pricing');
-            const checkedCount = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
-
-            if (checkedCount === 0) {
-                globalCheckbox.checked = false;
-                globalCheckbox.indeterminate = false;
-            } else if (checkedCount === rowCheckboxes.length) {
-                globalCheckbox.checked = true;
-                globalCheckbox.indeterminate = false;
-            } else {
-                globalCheckbox.checked = false;
-                globalCheckbox.indeterminate = true;
             }
         }
 
@@ -950,15 +826,13 @@
 
                 const inputCost = cells[1].querySelector('.cost-input').value;
                 const outputCost = cells[2].querySelector('.cost-input').value;
-                const useListPricing = row.querySelector('.row-list-pricing')?.checked || false;
 
-                if (modelName && (inputCost || outputCost || useListPricing)) {
+                if (modelName && (inputCost || outputCost)) {
                     costs.push({
                         model: modelName,
                         provider: provider,
                         inputCost: parseFloat(inputCost) || 0,
-                        outputCost: parseFloat(outputCost) || 0,
-                        useListPricing: useListPricing
+                        outputCost: parseFloat(outputCost) || 0
                     });
                 }
             });
