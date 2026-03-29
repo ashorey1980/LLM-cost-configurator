@@ -36,6 +36,11 @@ app.get('/pricing-admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'pricing-admin.html'));
 });
 
+// Route for Usage Costs page
+app.get('/usage-costs', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'llm-usage-costs.html'));
+});
+
 // Health check endpoint for Heroku
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });

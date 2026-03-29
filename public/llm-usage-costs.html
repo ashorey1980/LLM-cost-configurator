@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Proxy - Usage Costs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-item {
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px 12px;
+        }
+
+        .nav-item:hover {
+            color: #1a1a1a;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .icon-button:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 8px 0;
+        }
+
+        .sidebar-header {
+            padding: 8px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 10px 24px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            background: #f9fafb;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-left: 3px solid #2563eb;
+            padding-left: 21px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .page-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .page-link {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .page-link:hover {
+            text-decoration: underline;
+        }
+
+        .banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 20px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .banner-left {
+            flex: 1;
+        }
+
+        .banner-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .banner-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .banner-button {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .banner-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .product-select {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        select {
+            padding: 8px 36px 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .manage-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .manage-link:hover {
+            text-decoration: underline;
+        }
+
+        .export-button {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-button:hover {
+            background: #f9fafb;
+        }
+
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .metric-cost {
+            color: #10b981;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 24px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 4px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #1a1a1a;
+        }
+
+        .tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            min-width: 150px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 14px;
+            color: #1a1a1a;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .proxy-link {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .proxy-link:hover {
+            text-decoration: underline;
+        }
+
+        .cost-cell {
+            font-weight: 500;
+            color: #10b981;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .metrics-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo"></div>
+            <div class="nav-menu">
+                <div class="nav-item">Integrations</div>
+                <div class="nav-item">APIs</div>
+                <div class="nav-item">Agents & Tools</div>
+                <div class="nav-item">Runtimes</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-button">🔔</button>
+            <button class="icon-button">⚙️</button>
+            <button class="icon-button">🕐</button>
+            <div class="user-avatar">AS</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header">API Manager</div>
+                <div class="sidebar-item">Sandbox</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item">← LLM Proxies</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item">LLM Summary</div>
+                <div class="sidebar-item">Contracts</div>
+                <div class="sidebar-item">AI Policies</div>
+                <div class="sidebar-item">Message Log</div>
+                <div class="sidebar-item">Logs</div>
+                <div class="sidebar-item">SLA Tiers</div>
+                <div class="sidebar-item active">Usage Reports</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Usage Reports</h1>
+                <p class="page-description">
+                    Usage Reports can be used to track and understand the usage for select products in Anypoint Platform. For more information, see the <a href="#" class="page-link">documentation</a>.
+                </p>
+            </div>
+
+            <div class="banner">
+                <div class="banner-left">
+                    <div class="banner-title">Track credits and usage in Digital Wallet</div>
+                    <div class="banner-subtitle">View Flex Credits and Automation consumption analytics</div>
+                </div>
+                <button class="banner-button">
+                    Go to Digital Wallet →
+                </button>
+            </div>
+
+            <div class="product-section">
+                <div class="product-header">
+                    <div class="product-select">
+                        <label for="product" style="font-size: 14px; font-weight: 500; color: #374151;">Product</label>
+                        <div class="select-wrapper">
+                            <select id="product">
+                                <option value="llm-proxy" selected>LLM Proxy</option>
+                                <option value="other">Other Products</option>
+                            </select>
+                            <span class="badge">New</span>
+                        </div>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #3b82f6;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <a href="#" class="manage-link">
+                            Manage your LLM Proxies with API Manager
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    <button class="export-button">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export as CSV
+                    </button>
+                </div>
+
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Prompt Tokens:</div>
+                        <div class="metric-value">880</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Completion Tokens:</div>
+                        <div class="metric-value">61,459</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Tokens:</div>
+                        <div class="metric-value">91,212</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Cost per Month:</div>
+                        <div class="metric-value metric-cost">$150.00</div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab">Usage by Business Group</div>
+                    <div class="tab active">Usage by Application</div>
+                </div>
+
+                <div class="filter-bar">
+                    <div>
+                        <label for="proxyFilter" style="font-size: 13px; color: #6b7280; margin-right: 8px;">Filter by LLM Proxy</label>
+                        <select id="proxyFilter" class="filter-select">
+                            <option value="all">All</option>
+                            <option value="mythicalmodelbased">mythicalmodelbased</option>
+                            <option value="mythicalsemantic">mythicalsemantic</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="appFilter" style="font-size: 13px; color: #6b7280; margin-right: 8px;">Filter by Application</label>
+                        <select id="appFilter" class="filter-select">
+                            <option value="all">All</option>
+                            <option value="modelbasedapp">modelbasedapp</option>
+                            <option value="semanticroutingapp">SemanticRoutingApp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="usageTable">
+                        <thead>
+                            <tr>
+                                <th>Client Name</th>
+                                <th>LLM Proxy</th>
+                                <th>Provider</th>
+                                <th>Model</th>
+                                <th>Prompt tokens</th>
+                                <th>Completion tokens</th>
+                                <th>Total tokens</th>
+                                <th>Total Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>modelbasedapp</td>
+                                <td><a href="#" class="proxy-link">mythicalmodelbased</a></td>
+                                <td>gemini</td>
+                                <td>gemini-3-flash-preview</td>
+                                <td>32</td>
+                                <td>5,278</td>
+                                <td>7,904</td>
+                                <td class="cost-cell">$50.00</td>
+                            </tr>
+                            <tr>
+                                <td>modelbasedapp</td>
+                                <td><a href="#" class="proxy-link">mythicalmodelbased</a></td>
+                                <td>openai</td>
+                                <td>gpt-5-nano</td>
+                                <td>18</td>
+                                <td>1,753</td>
+                                <td>1,771</td>
+                                <td class="cost-cell">$50.00</td>
+                            </tr>
+                            <tr>
+                                <td>SemanticRoutingApp</td>
+                                <td><a href="#" class="proxy-link">mythicalsemantic</a></td>
+                                <td>gemini</td>
+                                <td>gemini-3-pro-preview</td>
+                                <td>40</td>
+                                <td>3,813</td>
+                                <td>9,204</td>
+                                <td class="cost-cell">$25.00</td>
+                            </tr>
+                            <tr>
+                                <td>SemanticRoutingApp</td>
+                                <td><a href="#" class="proxy-link">mythicalsemantic</a></td>
+                                <td>openai</td>
+                                <td>gpt-5</td>
+                                <td>60</td>
+                                <td>5,608</td>
+                                <td>5,668</td>
+                                <td class="cost-cell">$25.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Calculate total cost based on token usage and pricing
+        async function calculateCosts() {
+            try {
+                // Fetch pricing data
+                const response = await fetch('/api/pricing');
+                if (!response.ok) {
+                    console.error('Failed to load pricing data');
+                    return;
+                }
+
+                const pricingData = await response.json();
+                const pricing = pricingData.models || {};
+
+                // Get all table rows
+                const rows = document.querySelectorAll('#usageTable tbody tr');
+                let totalCost = 0;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const provider = cells[2].textContent.trim();
+                    const model = cells[3].textContent.trim();
+                    const promptTokens = parseFloat(cells[4].textContent.replace(/,/g, ''));
+                    const completionTokens = parseFloat(cells[5].textContent.replace(/,/g, ''));
+
+                    // Find matching pricing (normalize provider names)
+                    let providerKey = provider.charAt(0).toUpperCase() + provider.slice(1);
+                    let modelKey = model;
+
+                    // Try to find pricing
+                    let modelPricing = null;
+                    if (pricing[providerKey] && pricing[providerKey][modelKey]) {
+                        modelPricing = pricing[providerKey][modelKey];
+                    }
+
+                    if (modelPricing) {
+                        // Calculate cost (pricing is per 1M tokens)
+                        const inputCost = (promptTokens / 1000000) * modelPricing.input;
+                        const outputCost = (completionTokens / 1000000) * modelPricing.output;
+                        const rowCost = inputCost + outputCost;
+
+                        // Update the cost cell
+                        const costCell = cells[7];
+                        costCell.textContent = `$${rowCost.toFixed(2)}`;
+                        totalCost += rowCost;
+                    }
+                });
+
+                // Update total cost per month
+                const totalCostElement = document.querySelector('.metric-cost');
+                if (totalCostElement) {
+                    totalCostElement.textContent = `$${totalCost.toFixed(2)}`;
+                }
+            } catch (error) {
+                console.error('Error calculating costs:', error);
+            }
+        }
+
+        // Load costs on page load
+        // Note: Cost calculation disabled - using hardcoded values
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     calculateCosts();
+        // });
+    </script>
+</body>
+</html>
